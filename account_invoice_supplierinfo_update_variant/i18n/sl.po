@@ -24,6 +24,8 @@ msgid ""
 "- Check the option for an update on the product variant.\n"
 "- Uncheck the option for an update on the product model."
 msgstr ""
+"- Označite za posodobitev različice proizvoda.\n"
+"- Odstranite označbo za posodobitev modela proizvoda."
 
 #. module: account_invoice_supplierinfo_update_variant
 #: model:ir.model,name:account_invoice_supplierinfo_update_variant.model_account_invoice_line
@@ -33,4 +35,4 @@ msgstr "Postavka računa"
 #. module: account_invoice_supplierinfo_update_variant
 #: field:wizard.update.invoice.supplierinfo.line,to_variant:0
 msgid "Update to the variant"
-msgstr ""
+msgstr "Posodobitev različice"
