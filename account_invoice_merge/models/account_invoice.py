@@ -1,9 +1,16 @@
+<<<<<<< HEAD
 # -*- coding: utf-8 -*-
+=======
+>>>>>>> upstream/12.0
 # Copyright 2004-2010 Tiny SPRL (http://tiny.be).
 # Copyright 2010-2011 Elico Corp.
 # Copyright 2016 Acsone (https://www.acsone.eu/)
 # Copyright 2017 Eficent Business and IT Consulting Services S.L.
 #   (http://www.eficent.com)
+<<<<<<< HEAD
+=======
+# Copyright 2019 Okia SPRL
+>>>>>>> upstream/12.0
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
 
 from odoo import api, models
@@ -54,6 +61,14 @@ class AccountInvoice(models.Model):
         }
 
     @api.multi
+<<<<<<< HEAD
+=======
+    def _get_draft_invoices(self):
+        """Overridable function to return draft invoices to merge"""
+        return self.filtered(lambda x: x.state == 'draft')
+
+    @api.multi
+>>>>>>> upstream/12.0
     def do_merge(self, keep_references=True, date_invoice=False,
                  remove_empty_invoice_lines=True):
         """
@@ -96,6 +111,7 @@ class AccountInvoice(models.Model):
 
         # compute what the new invoices should contain
         new_invoices = {}
+<<<<<<< HEAD
         draft_invoices = [invoice
                           for invoice in self
                           if invoice.state == 'draft']
@@ -103,6 +119,12 @@ class AccountInvoice(models.Model):
         seen_client_refs = {}
 
         for account_invoice in draft_invoices:
+=======
+        seen_origins = {}
+        seen_client_refs = {}
+
+        for account_invoice in self._get_draft_invoices():
+>>>>>>> upstream/12.0
             invoice_key = make_key(
                 account_invoice, self._get_invoice_key_cols())
             new_invoice = new_invoices.setdefault(invoice_key, ({}, []))
@@ -152,6 +174,10 @@ class AccountInvoice(models.Model):
         allinvoices = []
         allnewinvoices = []
         invoices_info = {}
+<<<<<<< HEAD
+=======
+        old_invoices = self.env['account.invoice']
+>>>>>>> upstream/12.0
         qty_prec = self.env['decimal.precision'].precision_get(
             'Product Unit of Measure')
         for invoice_key, (invoice_data, old_ids) in new_invoices.items():

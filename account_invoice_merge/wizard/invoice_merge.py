@@ -1,12 +1,23 @@
+<<<<<<< HEAD
 # -*- coding: utf-8 -*-
+=======
+>>>>>>> upstream/12.0
 # Copyright 2004-2010 Tiny SPRL (http://tiny.be).
 # Copyright 2010-2011 Elico Corp.
 # Copyright 2016 Acsone (https://www.acsone.eu/)
 # Copyright 2017 Eficent Business and IT Consulting Services S.L.
 #   (http://www.eficent.com)
+<<<<<<< HEAD
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
 
 from odoo import api, exceptions, fields, models
+=======
+# Copyright 2019 Okia SPRL
+# License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
+
+from odoo import api, fields, models
+from odoo.exceptions import UserError
+>>>>>>> upstream/12.0
 from odoo.tools.translate import _
 
 
@@ -19,15 +30,37 @@ class InvoiceMerge(models.TransientModel):
     date_invoice = fields.Date('Invoice Date')
 
     @api.model
+<<<<<<< HEAD
+=======
+    def _get_not_mergeable_invoices_message(self, invoices):
+        """Overridable function to custom error message"""
+        key_fields = invoices._get_invoice_key_cols()
+        error_msg = {}
+        if len(invoices) != len(invoices._get_draft_invoices()):
+            error_msg['state'] = (
+                _('Megeable State (ex : %s)') %
+                (invoices and invoices[0].state or _('Draf')))
+        for field in key_fields:
+            if len(set(invoices.mapped(field))) > 1:
+                error_msg[field] = invoices._fields[field].string
+        return error_msg
+
+    @api.model
+>>>>>>> upstream/12.0
     def _dirty_check(self):
         if self.env.context.get('active_model', '') == 'account.invoice':
             ids = self.env.context['active_ids']
             if len(ids) < 2:
+<<<<<<< HEAD
                 raise exceptions.Warning(
+=======
+                raise UserError(
+>>>>>>> upstream/12.0
                     _('Please select multiple invoices to merge in the list '
                       'view.'))
 
             invs = self.env['account.invoice'].browse(ids)
+<<<<<<< HEAD
             for d in invs:
                 if d['state'] != 'draft':
                     raise exceptions.Warning(
@@ -51,6 +84,13 @@ class InvoiceMerge(models.TransientModel):
                 if d['journal_id'] != invs[0]['journal_id']:
                     raise exceptions.Warning(
                         _('Not all invoices are at the same journal!'))
+=======
+            error_msg = self._get_not_mergeable_invoices_message(invs)
+            if error_msg:
+                all_msg = _("All invoices must have the same: \n")
+                all_msg += '\n'.join([value for value in error_msg.values()])
+                raise UserError(all_msg)
+>>>>>>> upstream/12.0
         return {}
 
     @api.model

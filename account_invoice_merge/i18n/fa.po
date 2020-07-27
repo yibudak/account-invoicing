@@ -19,6 +19,7 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 
 #. module: account_invoice_merge
+<<<<<<< HEAD
 #: model:ir.ui.view,arch_db:account_invoice_merge.view_invoice_merge
 msgid "Are you sure you want to merge these invoices?"
 msgstr ""
@@ -31,26 +32,62 @@ msgstr ""
 
 #. module: account_invoice_merge
 #: model:ir.ui.view,arch_db:account_invoice_merge.view_invoice_merge
+=======
+#: code:addons/account_invoice_merge/wizard/invoice_merge.py:48
+#, python-format
+msgid "All invoices must have the same: \n"
+msgstr ""
+
+#. module: account_invoice_merge
+#: model_terms:ir.ui.view,arch_db:account_invoice_merge.view_invoice_merge
+msgid "Are you sure you want to merge these invoices?"
+msgstr ""
+
+#. module: account_invoice_merge
+#: model_terms:ir.ui.view,arch_db:account_invoice_merge.view_invoice_merge
+>>>>>>> upstream/12.0
 msgid "Cancel"
 msgstr "لغو"
 
 #. module: account_invoice_merge
+<<<<<<< HEAD
 #: model:ir.model.fields,field_description:account_invoice_merge.field_invoice_merge_create_uid
+=======
+#: model:ir.model.fields,field_description:account_invoice_merge.field_invoice_merge__create_uid
+>>>>>>> upstream/12.0
 msgid "Created by"
 msgstr "ایجاد شده توسط"
 
 #. module: account_invoice_merge
+<<<<<<< HEAD
 #: model:ir.model.fields,field_description:account_invoice_merge.field_invoice_merge_create_date
+=======
+#: model:ir.model.fields,field_description:account_invoice_merge.field_invoice_merge__create_date
+>>>>>>> upstream/12.0
 msgid "Created on"
 msgstr "ایجاد شده در"
 
 #. module: account_invoice_merge
+<<<<<<< HEAD
 #: model:ir.model.fields,field_description:account_invoice_merge.field_invoice_merge_display_name
+=======
+#: model:ir.model.fields,field_description:account_invoice_merge.field_invoice_merge__display_name
+>>>>>>> upstream/12.0
 msgid "Display Name"
 msgstr "نام نمایشی"
 
 #. module: account_invoice_merge
+<<<<<<< HEAD
 #: model:ir.model.fields,field_description:account_invoice_merge.field_invoice_merge_id
+=======
+#: code:addons/account_invoice_merge/wizard/invoice_merge.py:30
+#, python-format
+msgid "Draf"
+msgstr ""
+
+#. module: account_invoice_merge
+#: model:ir.model.fields,field_description:account_invoice_merge.field_invoice_merge__id
+>>>>>>> upstream/12.0
 msgid "ID"
 msgstr "شناسه"
 
@@ -60,31 +97,52 @@ msgid "Invoice"
 msgstr ""
 
 #. module: account_invoice_merge
+<<<<<<< HEAD
 #: model:ir.model.fields,field_description:account_invoice_merge.field_invoice_merge_date_invoice
+=======
+#: model:ir.model.fields,field_description:account_invoice_merge.field_invoice_merge__date_invoice
+>>>>>>> upstream/12.0
 msgid "Invoice Date"
 msgstr ""
 
 #. module: account_invoice_merge
+<<<<<<< HEAD
 #: model:ir.model.fields,field_description:account_invoice_merge.field_invoice_merge_keep_references
+=======
+#: model:ir.model.fields,field_description:account_invoice_merge.field_invoice_merge__keep_references
+>>>>>>> upstream/12.0
 msgid "Keep references from original invoices"
 msgstr ""
 
 #. module: account_invoice_merge
+<<<<<<< HEAD
 #: model:ir.model.fields,field_description:account_invoice_merge.field_invoice_merge___last_update
+=======
+#: model:ir.model.fields,field_description:account_invoice_merge.field_invoice_merge____last_update
+>>>>>>> upstream/12.0
 msgid "Last Modified on"
 msgstr "تاریخ آخرین به‌روزرسانی"
 
 #. module: account_invoice_merge
+<<<<<<< HEAD
 #: model:ir.model.fields,field_description:account_invoice_merge.field_invoice_merge_write_uid
+=======
+#: model:ir.model.fields,field_description:account_invoice_merge.field_invoice_merge__write_uid
+>>>>>>> upstream/12.0
 msgid "Last Updated by"
 msgstr "آخرین به روز رسانی توسط"
 
 #. module: account_invoice_merge
+<<<<<<< HEAD
 #: model:ir.model.fields,field_description:account_invoice_merge.field_invoice_merge_write_date
+=======
+#: model:ir.model.fields,field_description:account_invoice_merge.field_invoice_merge__write_date
+>>>>>>> upstream/12.0
 msgid "Last Updated on"
 msgstr "آخرین به روز رسانی در"
 
 #. module: account_invoice_merge
+<<<<<<< HEAD
 #: model:ir.ui.view,arch_db:account_invoice_merge.view_invoice_merge
 msgid "Merge Invoices"
 msgstr ""
@@ -134,6 +192,27 @@ msgstr ""
 
 #. module: account_invoice_merge
 #: model:ir.ui.view,arch_db:account_invoice_merge.view_invoice_merge
+=======
+#: code:addons/account_invoice_merge/wizard/invoice_merge.py:29
+#, python-format
+msgid "Megeable State (ex : %s)"
+msgstr ""
+
+#. module: account_invoice_merge
+#: model_terms:ir.ui.view,arch_db:account_invoice_merge.view_invoice_merge
+msgid "Merge Invoices"
+msgstr ""
+
+#. module: account_invoice_merge
+#: model:ir.actions.act_window,name:account_invoice_merge.action_view_invoice_merge
+#: model:ir.model,name:account_invoice_merge.model_invoice_merge
+#: model_terms:ir.ui.view,arch_db:account_invoice_merge.view_invoice_merge
+msgid "Merge Partner Invoice"
+msgstr ""
+
+#. module: account_invoice_merge
+#: model_terms:ir.ui.view,arch_db:account_invoice_merge.view_invoice_merge
+>>>>>>> upstream/12.0
 msgid ""
 "Please note that:<br/><br/>\n"
 "                        Invoices will only be merged if:<br/>\n"
@@ -148,12 +227,20 @@ msgid ""
 msgstr ""
 
 #. module: account_invoice_merge
+<<<<<<< HEAD
 #: code:addons/account_invoice_merge/wizard/invoice_merge.py:27
+=======
+#: code:addons/account_invoice_merge/wizard/invoice_merge.py:42
+>>>>>>> upstream/12.0
 #, python-format
 msgid "Please select multiple invoices to merge in the list view."
 msgstr ""
 
 #. module: account_invoice_merge
+<<<<<<< HEAD
 #: model:ir.ui.view,arch_db:account_invoice_merge.view_invoice_merge
+=======
+#: model_terms:ir.ui.view,arch_db:account_invoice_merge.view_invoice_merge
+>>>>>>> upstream/12.0
 msgid "or"
 msgstr "یا"

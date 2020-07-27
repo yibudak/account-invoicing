@@ -43,6 +43,10 @@ Contributors
 * Cédric Pigeon <cedric.pigeon@acsone.eu>
 * Lois Rilo <lois.rilo@eficent.com>
 * Miquel Raïch <miquel.raich@eficent.com>
+<<<<<<< HEAD
+=======
+* Sylvain Van Hoof <sylvain@okia.be>
+>>>>>>> upstream/12.0
 
 Maintainer
 ----------
