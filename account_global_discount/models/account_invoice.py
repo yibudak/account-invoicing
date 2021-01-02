@@ -21,6 +21,15 @@ class AccountInvoice(models.Model):
                "}.get(type, [])), ('account_id', '!=', False), '|', "
                "('company_id', '=', company_id), ('company_id', '=', False)]",
     )
+    # HACK: Looks like UI doesn't behave well with Many2many fields and
+    # negative groups when the same field is shown. In this case, we want to
+    # show the readonly version to any not in the global discount group.
+    # TODO: Check if it's fixed in future versions
+    global_discount_ids_readonly = fields.Many2many(
+        related="global_discount_ids",
+        string="Invoice Global Discounts (readonly)",
+        readonly=True,
+    )
     amount_global_discount = fields.Monetary(
         string='Total Global Discounts',
         compute='_compute_amount',
@@ -50,7 +59,8 @@ class AccountInvoice(models.Model):
         taxes_keys = {}
         # Perform a sanity check for discarding cases that will lead to
         # incorrect data in discounts
-        for inv_line in self.invoice_line_ids:
+        for inv_line in self.invoice_line_ids.filtered(
+                lambda l: not l.display_type):
             if not inv_line.invoice_line_tax_ids:
                 raise exceptions.UserError(_(
                     "With global discounts, taxes in lines are required."
@@ -120,12 +130,7 @@ class AccountInvoice(models.Model):
         """Trigger global discount lines to recompute all"""
         return self._onchange_invoice_line_ids()
 
-    @api.depends('invoice_line_ids.price_subtotal', 'tax_line_ids.amount',
-                 'tax_line_ids.amount_rounding', 'currency_id', 'company_id',
-                 'date_invoice', 'type',
-                 'invoice_global_discount_ids', 'global_discount_ids')
-    def _compute_amount(self):
-        super()._compute_amount()
+    def _compute_amount_one(self):
         if not self.invoice_global_discount_ids:
             return
         round_curr = self.currency_id.round
@@ -151,6 +156,15 @@ class AccountInvoice(models.Model):
         self.amount_total_company_signed = amount_total_company_signed * sign
         self.amount_total_signed = self.amount_total * sign
         self.amount_untaxed_signed = amount_untaxed_signed * sign
+
+    @api.depends('invoice_line_ids.price_subtotal', 'tax_line_ids.amount',
+                 'tax_line_ids.amount_rounding', 'currency_id', 'company_id',
+                 'date_invoice', 'type',
+                 'invoice_global_discount_ids', 'global_discount_ids')
+    def _compute_amount(self):
+        super()._compute_amount()
+        for record in self:
+            record._compute_amount_one()
 
     def get_taxes_values(self):
         """Override this computation for adding global discount to taxes."""

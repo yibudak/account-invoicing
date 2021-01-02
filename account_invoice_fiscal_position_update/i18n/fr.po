@@ -24,14 +24,8 @@ msgid "Invoice"
 msgstr "Facture"
 
 #. module: account_invoice_fiscal_position_update
-#: code:addons/account_invoice_fiscal_position_update/models/account_invoice.py:64
+#: code:addons/account_invoice_fiscal_position_update/models/account_invoice.py:65
 #, fuzzy, python-format
-#| msgid ""
-#| "The following invoice lines were not updated to the new Fiscal Position "
-#| "because they don't have a Product:\n"
-#| "- %s\n"
-#| "You should update the Account and the Taxes of these invoice lines "
-#| "manually."
 msgid ""
 "The following invoice lines were not updated to the new Fiscal Position "
 "because they don't have a Product: - %s You should update the Account and "
@@ -44,12 +38,8 @@ msgstr ""
 "chaque ligne de facture."
 
 #. module: account_invoice_fiscal_position_update
-#: code:addons/account_invoice_fiscal_position_update/models/account_invoice.py:58
+#: code:addons/account_invoice_fiscal_position_update/models/account_invoice.py:59
 #, fuzzy, python-format
-#| msgid ""
-#| "The invoice lines were not updated to the new Fiscal Position because "
-#| "they don't have products.\n"
-#| "You should update the Account and the Taxes of each invoice line manually."
 msgid ""
 "The invoice lines were not updated to the new Fiscal Position because they "
 "don't have products. You should update the Account and the Taxes of each "
@@ -61,7 +51,7 @@ msgstr ""
 "chaque ligne de facture."
 
 #. module: account_invoice_fiscal_position_update
-#: code:addons/account_invoice_fiscal_position_update/models/account_invoice.py:56
+#: code:addons/account_invoice_fiscal_position_update/models/account_invoice.py:57
 #, python-format
 msgid "Warning"
 msgstr "Avertissement"
