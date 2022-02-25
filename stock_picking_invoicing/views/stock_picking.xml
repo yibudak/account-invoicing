@@ -50,9 +50,9 @@
                     </group>
                 </page>
             </notebook>
-            <!--<button name="do_unreserve" position="after">
+            <button name="do_unreserve" position="after">
                 <button name="%(action_stock_invoice_onshipping)d" string="Create Invoice" attrs="{'invisible': ['|', ('state', '!=', 'done'), ('invoice_state', '!=', '2binvoiced')]}" type="action" class="oe_highlight" groups="base.group_user"/>
-            </button>-->
+            </button>
             <field name="move_ids_without_package" position="attributes">
                 <attribute name="context">
                     {'default_invoice_state': invoice_state,
