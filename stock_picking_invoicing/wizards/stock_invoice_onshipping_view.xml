@@ -13,7 +13,7 @@
                     <field name="show_purchase_journal" invisible="1"/>
                     <field name="sale_journal" attrs="{'invisible':[('show_sale_journal', '=', False)], 'required':[('show_sale_journal', '=', True)]}"/>
                     <field name="purchase_journal" attrs="{'invisible':[('show_purchase_journal', '=', False)], 'required':[('show_purchase_journal', '=', True)]}"/>
-                    <field name="group"/>
+                    <field name="group" invisible="1"/>
                     <field name="invoice_date" />
                 </group>
                 <footer>

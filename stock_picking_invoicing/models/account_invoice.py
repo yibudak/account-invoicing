@@ -1,7 +1,7 @@
 # Copyright (C) 2019-Today: Odoo Community Association (OCA)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
-from odoo import api, models
+from odoo import api, models, fields
 
 
 class AccountInvoice(models.Model):
@@ -65,3 +65,13 @@ class AccountInvoice(models.Model):
             'picking_ids': [(6, False, invoice.picking_ids.ids)],
         })
         return result
+
+
+class AccountInvoiceLine(models.Model):
+    _inherit = 'account.invoice.line'
+
+    lot_ids = fields.Many2many('stock.production.lot', relation='account_invoice_line_stock_lot_rel',
+                               column1='invoice_line_id', column2='lot_id',
+                               string='Lots/Serial Numbers')
+    moves_picking_ref = fields.Char(string='Picking Ref')
+    partner_order_ref = fields.Char(string='Order Reference')

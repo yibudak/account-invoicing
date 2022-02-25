@@ -61,7 +61,7 @@ class StockInvoiceOnshipping(models.TransientModel):
             ('partner', 'Partner'),
             ('partner_product', 'Partner/Product'),
         ],
-        default="picking",
+        default="partner",
         help="Group pickings/moves to create invoice(s):\n"
              "Picking: One invoice per picking;\n"
              "Partner: One invoice for each picking's partner;\n"
@@ -117,9 +117,7 @@ class StockInvoiceOnshipping(models.TransientModel):
             moves = lines.filtered(lambda x: x.location_dest_id.usage == usage)
         else:
             moves = lines.filtered(lambda x: x.location_id.usage == usage)
-        total = sum([
-            (m._get_price_unit_invoice(inv_type, m.picking_id.partner_id) *
-             m.product_uom_qty) for m in moves])
+        total = sum([m._get_price_unit_invoice() for m in moves])
         return total, moves.mapped('picking_id')
 
     @api.multi
@@ -273,6 +271,24 @@ class StockInvoiceOnshipping(models.TransientModel):
 
         return inv_type
 
+    @api.multi
+    def _get_reference(self):
+        """
+        Get invoice reference
+        :return: str
+        """
+        self.ensure_one()
+
+        active_ids = self.env.context.get('active_ids', [])
+        if active_ids:
+            active_ids = active_ids[0]
+        picking = self.env['stock.picking'].browse(active_ids)
+        if self.journal_type == 'sale':
+            reference = picking.sale_id.client_order_ref
+        else:
+            reference = False
+        return reference
+
     @api.model
     def _get_picking_key(self, picking):
         """
@@ -349,6 +365,7 @@ class StockInvoiceOnshipping(models.TransientModel):
         journal = self._get_journal()
         invoice_obj = self.env['account.invoice']
         values = invoice_obj.default_get(invoice_obj.fields_get().keys())
+        reference = self._get_reference()
         values.update({
             'origin': ", ".join(pickings.mapped("name")),
             'user_id': self.env.user.id,
@@ -356,8 +373,14 @@ class StockInvoiceOnshipping(models.TransientModel):
             'account_id': account_id,
             'payment_term_id': payment_term,
             'type': inv_type,
-            'fiscal_position_id': partner.property_account_position_id.id,
+            'referance': reference,
+            'address_contact_id': partner_id,
+            'fiscal_position_id': picking.sale_id.fiscal_position_id.id,
+            'pricelist_id': picking.sale_id.pricelist_id.id or False,
+            'partner_shipping_id': partner_id,
+            'comment': picking.note,
             'company_id': company.id,
+            'carrier_id': picking.carrier_id.id,
             'currency_id': currency.id,
             'journal_id': journal.id,
             'picking_ids': [(4, p.id, False) for p in pickings],
@@ -459,8 +482,9 @@ class StockInvoiceOnshipping(models.TransientModel):
             quantity += qty
             move_line_ids.append((4, move.id, False))
         taxes = moves._get_taxes(fiscal_position, inv_type)
-        price = moves._get_price_unit_invoice(
-            inv_type, partner_id, quantity)
+        price = moves._get_price_unit_invoice()
+        partner_order_ref = moves._get_partner_order_ref()
+        moves_picking_ref = moves._get_picking_ref()
         line_obj = self.env['account.invoice.line']
         values = line_obj.default_get(line_obj.fields_get().keys())
         values.update({
@@ -468,7 +492,11 @@ class StockInvoiceOnshipping(models.TransientModel):
             'account_id': account.id,
             'product_id': product.id,
             'uom_id': product.uom_id.id,
+            'lot_ids': [(4, lot.id) for lot in move.move_line_ids.mapped('lot_id')],
             'quantity': quantity,
+            'partner_order_ref': partner_order_ref,
+            'moves_picking_ref': moves_picking_ref,
+            'discount': moves.sale_line_id.discount if moves.sale_line_id else False,
             'price_unit': price,
             'invoice_line_tax_ids': [(6, 0, taxes.ids)],
             'move_line_ids': move_line_ids,
