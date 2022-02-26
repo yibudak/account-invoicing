@@ -358,10 +358,10 @@ class StockInvoiceOnshipping(models.TransientModel):
             payment_term = partner.property_supplier_payment_term_id.id
         company = self.env.user.company_id
         currency = company.currency_id
-        if partner:
-            code = picking.picking_type_id.code
-            if partner.property_product_pricelist and code == 'outgoing':
-                currency = partner.property_product_pricelist.currency_id
+        if inv_type is 'out_invoice':
+            currency = picking.sale_id.pricelist_id.currency_id or partner.property_product_pricelist.currency_id or company.currency_id
+        elif inv_type is 'out_refund':
+            currency = picking.purchase_id.currency_id or company.currency_id
         journal = self._get_journal()
         invoice_obj = self.env['account.invoice']
         values = invoice_obj.default_get(invoice_obj.fields_get().keys())
@@ -375,7 +375,7 @@ class StockInvoiceOnshipping(models.TransientModel):
             'type': inv_type,
             'referance': reference,
             'address_contact_id': partner_id,
-            'fiscal_position_id': picking.sale_id.fiscal_position_id.id,
+            'fiscal_position_id': picking.sale_id.fiscal_position_id.id or partner.property_account_position_id.id,
             'pricelist_id': picking.sale_id.pricelist_id.id or False,
             'partner_shipping_id': partner_id,
             'comment': picking.note,
@@ -496,7 +496,7 @@ class StockInvoiceOnshipping(models.TransientModel):
             'quantity': quantity,
             'partner_order_ref': partner_order_ref,
             'moves_picking_ref': moves_picking_ref,
-            'discount': moves.sale_line_id.discount if moves.sale_line_id else False,
+            'discount': moves.sale_line_id.discount or False,
             'price_unit': price,
             'invoice_line_tax_ids': [(6, 0, taxes.ids)],
             'move_line_ids': move_line_ids,
