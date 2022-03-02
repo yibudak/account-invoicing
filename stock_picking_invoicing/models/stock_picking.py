@@ -41,8 +41,7 @@ class StockPicking(models.Model):
     @api.multi
     def _get_partner_to_invoice(self):
         self.ensure_one()
-        partner = self.partner_id
-        return partner.address_get(['invoice']).get('invoice')
+        return self.sale_id.partner_invoice_id
 
     @api.multi
     def action_assign(self):
