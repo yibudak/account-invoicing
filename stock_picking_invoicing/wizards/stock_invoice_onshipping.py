@@ -348,7 +348,8 @@ class StockInvoiceOnshipping(models.TransientModel):
         """
         picking = fields.first(pickings)
         partner_id = picking._get_partner_to_invoice()
-        partner = self.env['res.partner'].browse(partner_id)
+        partner_shipping_id = picking.partner_id
+        partner = partner_id
         inv_type = self._get_invoice_type()
         if inv_type in ('out_invoice', 'out_refund'):
             account_id = partner.property_account_receivable_id.id
@@ -374,10 +375,10 @@ class StockInvoiceOnshipping(models.TransientModel):
             'payment_term_id': payment_term,
             'type': inv_type,
             'referance': reference,
-            'address_contact_id': partner_id,
+            'address_contact_id': partner_shipping_id,
             'fiscal_position_id': picking.sale_id.fiscal_position_id.id or partner.property_account_position_id.id,
             'pricelist_id': picking.sale_id.pricelist_id.id or False,
-            'partner_shipping_id': partner_id,
+            'partner_shipping_id': partner_shipping_id,
             'comment': picking.note,
             'company_id': company.id,
             'carrier_id': picking.carrier_id.id,
