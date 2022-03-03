@@ -369,7 +369,7 @@ class StockInvoiceOnshipping(models.TransientModel):
         reference = self._get_reference()
         values.update({
             'origin': ", ".join(pickings.mapped("name")),
-            'user_id': self.env.user.id,
+            'user_id': picking.sales_uid.id,
             'partner_id': partner_id,
             'account_id': account_id,
             'payment_term_id': payment_term,
