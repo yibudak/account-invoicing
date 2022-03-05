@@ -374,7 +374,7 @@ class StockInvoiceOnshipping(models.TransientModel):
             'account_id': account_id,
             'payment_term_id': payment_term,
             'type': inv_type,
-            'referance': reference,
+            'reference': reference,
             'address_contact_id': partner_shipping_id,
             'fiscal_position_id': picking.sale_id.fiscal_position_id.id or partner.property_account_position_id.id,
             'pricelist_id': picking.sale_id.pricelist_id.id or False,
