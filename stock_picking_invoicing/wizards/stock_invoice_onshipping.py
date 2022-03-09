@@ -469,6 +469,7 @@ class StockInvoiceOnshipping(models.TransientModel):
         move_line_ids = []
         for move in moves:
             qty = move.product_uom_qty
+            sale_name = move.sale_line_id.name
             loc = move.location_id
             loc_dst = move.location_dest_id
             # Better to understand with IF/ELIF than many OR
@@ -489,7 +490,7 @@ class StockInvoiceOnshipping(models.TransientModel):
         line_obj = self.env['account.invoice.line']
         values = line_obj.default_get(line_obj.fields_get().keys())
         values.update({
-            'name': name,
+            'name': sale_name or name,
             'account_id': account.id,
             'product_id': product.id,
             'uom_id': product.uom_id.id,
@@ -505,7 +506,7 @@ class StockInvoiceOnshipping(models.TransientModel):
         })
 
         values = self._simulate_invoice_line_onchange(values, price_unit=price)
-        values.update({'name': name})
+        values.update({'name': sale_name})
         return values
 
     @api.multi
