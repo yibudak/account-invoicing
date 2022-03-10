@@ -506,7 +506,7 @@ class StockInvoiceOnshipping(models.TransientModel):
         })
 
         values = self._simulate_invoice_line_onchange(values, price_unit=price)
-        values.update({'name': sale_name})
+        values.update({'name': sale_name or name})
         return values
 
     @api.multi
