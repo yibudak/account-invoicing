@@ -353,10 +353,10 @@ class StockInvoiceOnshipping(models.TransientModel):
         inv_type = self._get_invoice_type()
         if inv_type in ('out_invoice', 'out_refund'):
             account_id = partner.property_account_receivable_id.id
-            payment_term = partner.property_payment_term_id.id
+            payment_term = picking.sale_id.payment_term_id.id or partner.property_payment_term_id.id
         else:
             account_id = partner.property_account_payable_id.id
-            payment_term = partner.property_supplier_payment_term_id.id
+            payment_term = picking.sale_id.payment_term_id.id or partner.property_supplier_payment_term_id.id
         company = self.env.user.company_id
         currency = company.currency_id
         if inv_type is 'out_invoice':
@@ -567,5 +567,7 @@ class StockInvoiceOnshipping(models.TransientModel):
                     invoice = self._create_invoice(invoice_values)
                     invoice._onchange_invoice_line_ids()
                     invoice.compute_taxes()
+                    for move in moves_list:
+                        move.sale_line_id.invoice_lines = [(6, 0, invoice.invoice_line_ids.filtered(lambda r: r.product_id.id == move.product_id.id).mapped('id'))]
                     invoices |= invoice
         return invoices
