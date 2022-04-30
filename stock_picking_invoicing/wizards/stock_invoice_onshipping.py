@@ -84,6 +84,9 @@ class StockInvoiceOnshipping(models.TransientModel):
     )
     show_sale_journal = fields.Boolean()
     show_purchase_journal = fields.Boolean()
+    connect_to_einvoice = fields.Boolean(string='Connect to e-invoice')
+    partner_id = fields.Many2one('res.partner', string='Partner', readonly=True)
+    supplier_invoice_id = fields.Many2one('account.invoice', string='Supplier Invoice')
 
     @api.model
     def default_get(self, fields_list):
@@ -93,8 +96,13 @@ class StockInvoiceOnshipping(models.TransientModel):
         :return: dict
         """
         result = super(StockInvoiceOnshipping, self).default_get(fields_list)
+        partner_id = False
+        picking = self._load_pickings()
+        if picking:
+            partner_id = picking.partner_id.id
         result.update({
             'invoice_date': fields.Date.today(),
+            'partner_id': partner_id,
         })
         return result
 
@@ -196,7 +204,10 @@ class StockInvoiceOnshipping(models.TransientModel):
         :return:
         """
         self.ensure_one()
-        invoices = self._action_generate_invoices()
+        if self.connect_to_einvoice and self.journal_type == 'purchase':
+            invoices = self._action_connect_supplier_einvoice()
+        else:
+            invoices = self._action_generate_invoices()
         if not invoices:
             raise UserError(_('No invoice created!'))
 
@@ -359,9 +370,9 @@ class StockInvoiceOnshipping(models.TransientModel):
             payment_term = picking.sale_id.payment_term_id.id or partner.property_supplier_payment_term_id.id
         company = self.env.user.company_id
         currency = company.currency_id
-        if inv_type is 'out_invoice':
+        if inv_type == 'out_invoice':
             currency = picking.sale_id.pricelist_id.currency_id or partner.property_product_pricelist.currency_id or company.currency_id
-        elif inv_type is 'out_refund':
+        elif inv_type == 'out_refund':
             currency = picking.purchase_id.currency_id or company.currency_id
         journal = self._get_journal()
         invoice_obj = self.env['account.invoice']
@@ -500,6 +511,7 @@ class StockInvoiceOnshipping(models.TransientModel):
             'moves_picking_ref': moves_picking_ref,
             'discount': moves.sale_line_id.discount or False,
             'price_unit': price,
+            'sale_line_ids': [(6, 0, moves.sale_line_id.ids)],
             'invoice_line_tax_ids': [(6, 0, taxes.ids)],
             'move_line_ids': move_line_ids,
             'invoice_id': invoice.id,
@@ -533,6 +545,51 @@ class StockInvoiceOnshipping(models.TransientModel):
         :return: invoice
         """
         return self.env['account.invoice'].create(invoice_values)
+
+    def _action_connect_supplier_einvoice(self):
+        """
+        Connect to supplier einvoice
+        :return: action.invoice recordset
+        """
+        invoice = self.supplier_invoice_id
+        pickings = self._load_pickings()
+        moves = pickings.mapped("move_lines")
+        pick_list = self._group_pickings(pickings)
+        if not invoice:
+            raise UserError(_('You must select a supplier invoice'))
+
+        if not invoice.invoice_line_ids:
+            invoice.action_import_lines_from_einvoice_xml()
+
+        invoice.write({
+            'picking_ids': [(6, 0, [p.id for p in pick_list])],
+        })
+        for picking in pick_list:
+            if picking.purchase_id:
+                invoice_lines = invoice.invoice_line_ids
+                for inv_line in invoice_lines:
+                    inv_line.write({
+                        'purchase_id': picking.purchase_id.id,
+                        'purchase_line_id': picking.purchase_id.order_line.filtered(lambda o:
+                                                                                    o.product_id == inv_line.product_id).id,
+                        'move_line_ids': [(6, 0, moves.filtered(lambda m:
+                                                                m.product_id == inv_line.product_id).ids)],
+
+                    })
+
+                for move in moves:
+                    move.write({
+                        'invoice_line_ids': [
+                            (6, 0, invoice_lines.filtered(lambda l:
+                                                          l.product_id == move.product_id).ids)]
+                    })
+
+                for order_line in picking.purchase_id.order_line:
+                    order_line.write({
+                        'invoice_lines': [(6, 0, invoice_lines.filtered(lambda l:
+                                                                        l.product_id == order_line.product_id).ids)]
+                    })
+        return invoice
 
     def _action_generate_invoices(self):
         """
@@ -568,6 +625,6 @@ class StockInvoiceOnshipping(models.TransientModel):
                     invoice._onchange_invoice_line_ids()
                     invoice.compute_taxes()
                     for move in moves_list:
-                        move.sale_line_id.invoice_lines = [(6, 0, invoice.invoice_line_ids.filtered(lambda r: r.product_id.id == move.product_id.id).mapped('id'))]
+                        move.sale_line_id.invoice_lines = move.invoice_line_ids
                     invoices |= invoice
         return invoices
