@@ -25,8 +25,7 @@
                     <field name="supplier_invoice_id" domain="[('partner_id', '=', partner_id),
                                                                ('type','=','in_invoice'),
                                                                ('state', '=', 'draft'),
-                                                               ('is_einvoice', '!=', False),
-                                                               ('picking_ids', '=', False)]"/>
+                                                               ('is_einvoice', '!=', False)]"/>
                 </group>
                 <footer>
                     <button name="action_generate" string="Create" type="object" class="oe_highlight"/>

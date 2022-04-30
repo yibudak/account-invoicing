@@ -370,9 +370,9 @@ class StockInvoiceOnshipping(models.TransientModel):
             payment_term = picking.sale_id.payment_term_id.id or partner.property_supplier_payment_term_id.id
         company = self.env.user.company_id
         currency = company.currency_id
-        if inv_type is 'out_invoice':
+        if inv_type == 'out_invoice':
             currency = picking.sale_id.pricelist_id.currency_id or partner.property_product_pricelist.currency_id or company.currency_id
-        elif inv_type is 'out_refund':
+        elif inv_type == 'out_refund':
             currency = picking.purchase_id.currency_id or company.currency_id
         journal = self._get_journal()
         invoice_obj = self.env['account.invoice']
@@ -553,6 +553,7 @@ class StockInvoiceOnshipping(models.TransientModel):
         """
         invoice = self.supplier_invoice_id
         pickings = self._load_pickings()
+        moves = pickings.mapped("move_lines")
         pick_list = self._group_pickings(pickings)
         if not invoice:
             raise UserError(_('You must select a supplier invoice'))
@@ -563,8 +564,31 @@ class StockInvoiceOnshipping(models.TransientModel):
         invoice.write({
             'picking_ids': [(6, 0, [p.id for p in pick_list])],
         })
-        #TODO match products and connect with purchase, move and vice versa
+        for picking in pick_list:
+            if picking.purchase_id:
+                invoice_lines = invoice.invoice_line_ids
+                for inv_line in invoice_lines:
+                    inv_line.write({
+                        'purchase_id': picking.purchase_id.id,
+                        'purchase_line_id': picking.purchase_id.order_line.filtered(lambda o:
+                                                                                    o.product_id == inv_line.product_id).id,
+                        'move_line_ids': [(6, 0, moves.filtered(lambda m:
+                                                                m.product_id == inv_line.product_id).ids)],
 
+                    })
+
+                for move in moves:
+                    move.write({
+                        'invoice_line_ids': [
+                            (6, 0, invoice_lines.filtered(lambda l:
+                                                          l.product_id == move.product_id).ids)]
+                    })
+
+                for order_line in picking.purchase_id.order_line:
+                    order_line.write({
+                        'invoice_lines': [(6, 0, invoice_lines.filtered(lambda l:
+                                                                        l.product_id == order_line.product_id).ids)]
+                    })
         return invoice
 
     def _action_generate_invoices(self):
