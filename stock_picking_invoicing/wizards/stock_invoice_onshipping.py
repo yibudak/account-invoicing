@@ -500,6 +500,7 @@ class StockInvoiceOnshipping(models.TransientModel):
             'moves_picking_ref': moves_picking_ref,
             'discount': moves.sale_line_id.discount or False,
             'price_unit': price,
+            'sale_line_ids': [(6, 0, moves.sale_line_id.ids)],
             'invoice_line_tax_ids': [(6, 0, taxes.ids)],
             'move_line_ids': move_line_ids,
             'invoice_id': invoice.id,
@@ -568,6 +569,6 @@ class StockInvoiceOnshipping(models.TransientModel):
                     invoice._onchange_invoice_line_ids()
                     invoice.compute_taxes()
                     for move in moves_list:
-                        move.sale_line_id.invoice_lines = [(6, 0, invoice.invoice_line_ids.filtered(lambda r: r.product_id.id == move.product_id.id).mapped('id'))]
+                        move.sale_line_id.invoice_lines = move.invoice_line_ids
                     invoices |= invoice
         return invoices
