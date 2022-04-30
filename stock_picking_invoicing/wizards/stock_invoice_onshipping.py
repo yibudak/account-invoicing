@@ -84,6 +84,9 @@ class StockInvoiceOnshipping(models.TransientModel):
     )
     show_sale_journal = fields.Boolean()
     show_purchase_journal = fields.Boolean()
+    connect_to_einvoice = fields.Boolean(string='Connect to e-invoice')
+    partner_id = fields.Many2one('res.partner', string='Partner', readonly=True)
+    supplier_invoice_id = fields.Many2one('account.invoice', string='Supplier Invoice')
 
     @api.model
     def default_get(self, fields_list):
@@ -93,8 +96,13 @@ class StockInvoiceOnshipping(models.TransientModel):
         :return: dict
         """
         result = super(StockInvoiceOnshipping, self).default_get(fields_list)
+        partner_id = False
+        picking = self._load_pickings()
+        if picking:
+            partner_id = picking.partner_id.id
         result.update({
             'invoice_date': fields.Date.today(),
+            'partner_id': partner_id,
         })
         return result
 
@@ -196,7 +204,10 @@ class StockInvoiceOnshipping(models.TransientModel):
         :return:
         """
         self.ensure_one()
-        invoices = self._action_generate_invoices()
+        if self.connect_to_einvoice and self.journal_type == 'purchase':
+            invoices = self._action_connect_supplier_einvoice()
+        else:
+            invoices = self._action_generate_invoices()
         if not invoices:
             raise UserError(_('No invoice created!'))
 
@@ -534,6 +545,27 @@ class StockInvoiceOnshipping(models.TransientModel):
         :return: invoice
         """
         return self.env['account.invoice'].create(invoice_values)
+
+    def _action_connect_supplier_einvoice(self):
+        """
+        Connect to supplier einvoice
+        :return: action.invoice recordset
+        """
+        invoice = self.supplier_invoice_id
+        pickings = self._load_pickings()
+        pick_list = self._group_pickings(pickings)
+        if not invoice:
+            raise UserError(_('You must select a supplier invoice'))
+
+        if not invoice.invoice_line_ids:
+            invoice.action_import_lines_from_einvoice_xml()
+
+        invoice.write({
+            'picking_ids': [(6, 0, [p.id for p in pick_list])],
+        })
+        #TODO match products and connect with purchase, move and vice versa
+
+        return invoice
 
     def _action_generate_invoices(self):
         """
