@@ -584,7 +584,7 @@ class StockInvoiceOnshipping(models.TransientModel):
                         'invoice_line_ids': [(4, invoice_line.id)]
                     })
 
-                purchase_line = picking.purchase_id.order_line.filtered(lambda l: l.product_id == move.product_id)
+                purchase_line = move.purchase_line_id
                 # Link Invoice Lines with Move and Purchase Line
                 invoice_line.write({
                     'purchase_id': picking.purchase_id.id,
@@ -618,7 +618,7 @@ class StockInvoiceOnshipping(models.TransientModel):
         taxes = move._get_taxes(invoice.fiscal_position_id, invoice.type)
         partner_order_ref = move._get_partner_order_ref()
         moves_picking_ref = move._get_picking_ref()
-        purchase_line = picking.purchase_id.order_line.filtered(lambda l: l.product_id == move.product_id)
+        purchase_line = move.purchase_line_id
         if invoice.type in ('out_invoice', 'out_refund'):
             account = product.property_account_income_id
             if not account:

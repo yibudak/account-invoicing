@@ -16,7 +16,10 @@ class AccountInvoice(models.Model):
         for invoice in self:
             if not invoice.picking_ids:
                 raise ValidationError(_('No picking linked to this invoice'))
-            old_invoice_lines = invoice.invoice_line_ids.filtered(lambda l: l.purchase_line_id)
+            old_invoice_lines = invoice.invoice_line_ids.filtered(lambda l: not (l.name_xml or
+                                                                                 l.SellersItemIdentification or
+                                                                                 l.ManufacturersItemIdentification or
+                                                                                 l.description))
             old_invoice_lines.unlink()
             for picking in invoice.picking_ids:
                 moves = picking.mapped("move_lines")
@@ -24,7 +27,7 @@ class AccountInvoice(models.Model):
                     partner_order_ref = move._get_partner_order_ref()
                     move_picking_ref = move._get_picking_ref()
                     invoice_line = invoice.invoice_line_ids.filtered(lambda l: l.product_id == move.product_id)
-                    purchase_line = picking.purchase_id.order_line.filtered(lambda l: l.product_id == move.product_id)
+                    purchase_line = move.purchase_line_id
                     # Link Invoice Lines with Move and Purchase Line
                     invoice_line.write({
                         'purchase_id': picking.purchase_id.id,
@@ -43,6 +46,9 @@ class AccountInvoice(models.Model):
                         'invoice_line_ids': [
                             (6, 0, invoice_line.ids)],
                     })
+            invoice.compute_taxes()
+            invoice._create_missing_supplierinfo()
+        return True
 
     @api.multi
     def action_cancel(self):
