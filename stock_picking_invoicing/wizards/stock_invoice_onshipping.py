@@ -97,12 +97,16 @@ class StockInvoiceOnshipping(models.TransientModel):
         """
         result = super(StockInvoiceOnshipping, self).default_get(fields_list)
         partner_id = False
-        picking = self._load_pickings()
-        if picking:
-            partner_id = picking.partner_id.id
+        pickings = self._load_pickings()
+        if pickings:
+            partner_id = pickings.mapped('partner_id')
+
+        if len(partner_id) > 1:
+            raise UserError(_('You can only invoice one partner'))
+
         result.update({
             'invoice_date': fields.Date.today(),
-            'partner_id': partner_id,
+            'partner_id': partner_id.id,
         })
         return result
 
@@ -249,6 +253,7 @@ class StockInvoiceOnshipping(models.TransientModel):
         picking_obj = self.env['stock.picking']
         active_ids = self.env.context.get('active_ids', [])
         pickings = picking_obj.browse(active_ids)
+        pickings._set_as_2binvoiced()
         pickings = pickings.filtered(lambda p: p.invoice_state == '2binvoiced')
         return pickings
 
@@ -551,45 +556,98 @@ class StockInvoiceOnshipping(models.TransientModel):
         Connect to supplier einvoice
         :return: action.invoice recordset
         """
+        AccountInvoiceLine = self.env['account.invoice.line']
         invoice = self.supplier_invoice_id
         pickings = self._load_pickings()
-        moves = pickings.mapped("move_lines")
-        pick_list = self._group_pickings(pickings)
+
         if not invoice:
             raise UserError(_('You must select a supplier invoice'))
 
         if not invoice.invoice_line_ids:
             invoice.action_import_lines_from_einvoice_xml()
 
+        # Link pickings with invoice
         invoice.write({
-            'picking_ids': [(6, 0, [p.id for p in pick_list])],
+            'picking_ids': [(6, 0, [p.id for p in pickings])],
         })
-        for picking in pick_list:
-            if picking.purchase_id:
-                invoice_lines = invoice.invoice_line_ids
-                for inv_line in invoice_lines:
-                    inv_line.write({
-                        'purchase_id': picking.purchase_id.id,
-                        'purchase_line_id': picking.purchase_id.order_line.filtered(lambda o:
-                                                                                    o.product_id == inv_line.product_id).id,
-                        'move_line_ids': [(6, 0, moves.filtered(lambda m:
-                                                                m.product_id == inv_line.product_id).ids)],
+        invoice_lines = invoice.invoice_line_ids
 
+        for picking in pickings:
+            moves = picking.mapped("move_lines")
+            for move in moves:
+                invoice_line = invoice_lines.filtered(lambda l: l.product_id == move.product_id)
+
+                if not invoice_line:
+                    invoice_line = AccountInvoiceLine.create(self._prepare_purchase_invoice_line(picking, move,
+                                                                                                 invoice))
+                    invoice.write({
+                        'invoice_line_ids': [(4, invoice_line.id)]
                     })
 
-                for move in moves:
-                    move.write({
-                        'invoice_line_ids': [
-                            (6, 0, invoice_lines.filtered(lambda l:
-                                                          l.product_id == move.product_id).ids)]
+                purchase_line = picking.purchase_id.order_line.filtered(lambda l: l.product_id == move.product_id)
+                # Link Invoice Lines with Move and Purchase Line
+                invoice_line.write({
+                    'purchase_id': picking.purchase_id.id,
+                    'purchase_line_id': purchase_line.id,
+                    'move_line_ids': [(6, 0, move.move_line_ids.ids)],
+                })
+                # Link Purchase Line with Invoice Lines
+                if purchase_line:
+                    purchase_line.write({
+                        'invoice_lines': [(6, 0, invoice_line.ids)],
                     })
+                # Link Move with Invoice Lines
+                move.write({
+                    'invoice_line_ids': [
+                        (6, 0, invoice_line.ids)],
+                })
 
-                for order_line in picking.purchase_id.order_line:
-                    order_line.write({
-                        'invoice_lines': [(6, 0, invoice_lines.filtered(lambda l:
-                                                                        l.product_id == order_line.product_id).ids)]
-                    })
         return invoice
+
+    def _prepare_purchase_invoice_line(self, picking, move, invoice):
+        """
+        Prepare invoice line
+        :param picking: stock.picking recordset
+        :param move: stock.move recordset
+        :param invoice: account.invoice recordset
+        :return: values: dict
+        """
+        line_obj = self.env['account.invoice.line']
+        product = move.product_id
+        categ = product.categ_id
+        taxes = move._get_taxes(invoice.fiscal_position_id, invoice.type)
+        partner_order_ref = move._get_partner_order_ref()
+        moves_picking_ref = move._get_picking_ref()
+        purchase_line = picking.purchase_id.order_line.filtered(lambda l: l.product_id == move.product_id)
+        if invoice.type in ('out_invoice', 'out_refund'):
+            account = product.property_account_income_id
+            if not account:
+                account = categ.property_account_income_categ_id
+        else:
+            account = product.property_account_expense_id
+            if not account:
+                account = categ.property_account_expense_categ_id
+        account = move._get_account(invoice.fiscal_position_id, account)
+        price = purchase_line.price_unit
+        values = line_obj.default_get(line_obj.fields_get().keys())
+        values.update({
+            'name': move.name,
+            'account_id': account.id,
+            'product_id': product.id,
+            'uom_id': product.uom_id.id,
+            'lot_ids': [(4, lot.id) for lot in move.move_line_ids.mapped('lot_id')],
+            'quantity': move.product_uom_qty,
+            'partner_order_ref': partner_order_ref,
+            'moves_picking_ref': moves_picking_ref,
+            'price_unit': price,
+            'purchase_line_ids': [(6, 0, purchase_line.ids)],
+            'invoice_line_tax_ids': [(6, 0, taxes.ids)],
+            'move_line_ids': [(6, 0, move.move_line_ids.ids)],
+            'invoice_id': invoice.id,
+        })
+        values = self._simulate_invoice_line_onchange(values, price_unit=price)
+        values.update({'name': move.name})
+        return values
 
     def _action_generate_invoices(self):
         """
