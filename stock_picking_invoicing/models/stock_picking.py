@@ -50,3 +50,11 @@ class StockPicking(models.Model):
                 for m in self.mapped('move_lines')):
             self.write({'invoice_state': '2binvoiced'})
         return super().action_assign()
+
+    @api.multi
+    def button_validate(self):
+        for picking in self.filtered(lambda p:
+                                     p.picking_type_id.code not in ['internal',
+                                                                    'mrp_operation']):
+            picking.set_to_be_invoiced()
+        return super(StockPicking, self).button_validate()
