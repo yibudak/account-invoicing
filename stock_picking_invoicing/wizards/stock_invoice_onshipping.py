@@ -96,18 +96,14 @@ class StockInvoiceOnshipping(models.TransientModel):
         :return: dict
         """
         result = super(StockInvoiceOnshipping, self).default_get(fields_list)
-        partner_id = False
+        result.update({'invoice_date': fields.Date.today()})
         pickings = self._load_pickings()
-        if pickings:
+        if pickings and 'customer' not in pickings.mapped('location_dest_id.usage'):
             partner_id = pickings.mapped('partner_id')
+            if len(partner_id) > 1:
+                raise UserError(_('You can only invoice one partner'))
+            result.update({'partner_id': partner_id.id})
 
-        if len(partner_id) > 1:
-            raise UserError(_('You can only invoice one partner'))
-
-        result.update({
-            'invoice_date': fields.Date.today(),
-            'partner_id': partner_id.id,
-        })
         return result
 
     @api.onchange('group')
