@@ -394,6 +394,7 @@ class StockInvoiceOnshipping(models.TransientModel):
             'comment': picking.note,
             'company_id': company.id,
             'carrier_id': picking.carrier_id.id,
+            'delivery_ref_no': picking.carrier_tracking_ref or False,
             'currency_id': currency.id,
             'journal_id': journal.id,
             'picking_ids': [(4, p.id, False) for p in pickings],
