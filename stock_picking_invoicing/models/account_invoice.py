@@ -7,6 +7,9 @@ from odoo.exceptions import ValidationError
 class AccountInvoice(models.Model):
     _inherit = "account.invoice"
 
+    delivery_ref_no = fields.Char(string='Delivery Reference No.', help="Delivery carrier reference number before"
+                                                                        " the shipment is sent to the carrier.")
+
     @api.multi
     def action_match_einvoice_lines_picking(self):
         """
