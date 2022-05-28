@@ -63,7 +63,8 @@ class AccountInvoice(models.Model):
         result = super(AccountInvoice, self).action_cancel()
         pickings = self.filtered(
             lambda i: i.picking_ids and
-            i.type in ['out_invoice', 'in_invoice']).mapped("picking_ids")
+            i.type in ['out_invoice', 'in_invoice'] and
+            i.einvoice_state != 'cancelled').mapped("picking_ids")
         self.mapped("invoice_line_ids.move_line_ids")._set_as_2binvoiced()
         pickings._set_as_2binvoiced()
         return result
