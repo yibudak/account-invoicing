@@ -680,6 +680,7 @@ class StockInvoiceOnshipping(models.TransientModel):
                     invoice._onchange_invoice_line_ids()
                     invoice.compute_taxes()
                     for move in moves_list:
-                        move.sale_line_id.invoice_lines = move.invoice_line_ids
+                        if move.sale_line_id:
+                            move.sale_line_id.invoice_lines = move.invoice_line_ids
                     invoices |= invoice
         return invoices
