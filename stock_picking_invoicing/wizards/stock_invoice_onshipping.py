@@ -246,10 +246,15 @@ class StockInvoiceOnshipping(models.TransientModel):
         Load pickings from context
         :return: stock.picking recordset
         """
-        picking_obj = self.env['stock.picking']
-        active_ids = self.env.context.get('active_ids', [])
-        pickings = picking_obj.browse(active_ids)
-        pickings._set_as_2binvoiced()
+        if self.env.context.get('active_model') == 'stock.ewaybill':
+            waybill_obj = self.env['stock.ewaybill'].browse(self.env.context.get('active_ids', []))
+            pickings = waybill_obj.picking_ids
+        else:
+            picking_obj = self.env['stock.picking']
+            active_ids = self.env.context.get('active_ids', [])
+            pickings = picking_obj.browse(active_ids)
+
+        # pickings._set_as_2binvoiced() todo: check if this is needed
         pickings = pickings.filtered(lambda p: p.invoice_state == '2binvoiced')
         return pickings
 
