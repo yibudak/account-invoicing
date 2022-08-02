@@ -35,8 +35,12 @@ class StockInvoiceOnshipping(models.TransientModel):
         active_ids = self.env.context.get('active_ids', [])
         if active_ids:
             active_ids = active_ids[0]
-        pick_obj = self.env['stock.picking']
-        picking = pick_obj.browse(active_ids)
+
+        if self.env.context.get('active_model') == 'stock.ewaybill':
+            picking = self.env['stock.ewaybill'].browse(active_ids).picking_id
+        else:
+            pick_obj = self.env['stock.picking']
+            picking = pick_obj.browse(active_ids)
         if not picking or not picking.move_lines:
             return 'sale'
         pick_type_code = picking.picking_type_id.code
@@ -249,13 +253,19 @@ class StockInvoiceOnshipping(models.TransientModel):
         if self.env.context.get('active_model') == 'stock.ewaybill':
             waybill_obj = self.env['stock.ewaybill'].browse(self.env.context.get('active_ids', []))
             pickings = waybill_obj.picking_ids
+            pickings = pickings.filtered(lambda p: p.invoice_state == '2binvoiced')
+            return pickings
         else:
             picking_obj = self.env['stock.picking']
             active_ids = self.env.context.get('active_ids', [])
             pickings = picking_obj.browse(active_ids)
+            # pickings._set_as_2binvoiced() todo: check if this is needed
+            pickings = pickings.filtered(lambda p: p.invoice_state == '2binvoiced')
 
-        # pickings._set_as_2binvoiced() todo: check if this is needed
-        pickings = pickings.filtered(lambda p: p.invoice_state == '2binvoiced')
+        for picking in pickings:
+            if len(picking.ewaybill_ids) > 0:
+                raise UserError(_('The picking %s is already linked to an e-Waybill.'
+                                  ' You need to create the invoice from e-waybill.') % picking.name)
         return pickings
 
     @api.multi
