@@ -253,6 +253,8 @@ class StockInvoiceOnshipping(models.TransientModel):
         if self.env.context.get('active_model') == 'stock.ewaybill':
             waybill_obj = self.env['stock.ewaybill'].browse(self.env.context.get('active_ids', []))
             pickings = waybill_obj.picking_ids
+            if not pickings:
+                raise UserError(_('No picking found! Match the waybill with a picking before creating the invoice.'))
             pickings = pickings.filtered(lambda p: p.invoice_state == '2binvoiced')
             return pickings
         else:
@@ -288,6 +290,8 @@ class StockInvoiceOnshipping(models.TransientModel):
         self.ensure_one()
 
         active_ids = self.env.context.get('active_ids', [])
+        if active_ids:
+            active_ids = active_ids[0]
         if self.env.context.get('active_model') == 'stock.ewaybill':
             picking = self.env['stock.ewaybill'].browse(active_ids).picking_id
         else:
@@ -675,6 +679,10 @@ class StockInvoiceOnshipping(models.TransientModel):
         pick_list = self._group_pickings(pickings)
         invoices = self.env['account.invoice'].browse()
         for pickings in pick_list:
+            if True in pickings.mapped('sale_id.create_ewaybill_within_invoice'):
+                pickings.filtered(lambda p:
+                                  p.document_date == False and p.sale_id.create_ewaybill_within_invoice). \
+                    _create_ewaybill_before_invoice(ewaybill_date=self.invoice_date)
             moves = pickings.mapped("move_lines")
             grouped_moves_list = self._group_moves(moves)
             parts = self.ungroup_moves(grouped_moves_list)
