@@ -288,9 +288,11 @@ class StockInvoiceOnshipping(models.TransientModel):
         self.ensure_one()
 
         active_ids = self.env.context.get('active_ids', [])
-        if active_ids:
-            active_ids = active_ids[0]
-        picking = self.env['stock.picking'].browse(active_ids)
+        if self.env.context.get('active_model') == 'stock.ewaybill':
+            picking = self.env['stock.ewaybill'].browse(active_ids).picking_id
+        else:
+            pick_obj = self.env['stock.picking']
+            picking = pick_obj.browse(active_ids)
 
         inv_type = INVOICE_TYPE_MAP.get((
             picking.picking_type_code, picking.location_id.usage,
