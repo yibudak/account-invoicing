@@ -263,11 +263,6 @@ class StockInvoiceOnshipping(models.TransientModel):
             pickings = picking_obj.browse(active_ids)
             # pickings._set_as_2binvoiced() todo: check if this is needed
             pickings = pickings.filtered(lambda p: p.invoice_state == '2binvoiced')
-
-        for picking in pickings:
-            if len(picking.ewaybill_ids) > 0:
-                raise UserError(_('The picking %s is already linked to an e-Waybill.'
-                                  ' You need to create the invoice from e-waybill.') % picking.name)
         return pickings
 
     @api.multi
@@ -681,7 +676,7 @@ class StockInvoiceOnshipping(models.TransientModel):
         for pickings in pick_list:
             if True in pickings.mapped('sale_id.create_ewaybill_within_invoice'):
                 pickings.filtered(lambda p:
-                                  p.document_date == False and p.sale_id.create_ewaybill_within_invoice). \
+                                  p.ewaybill_ids == False and p.sale_id.create_ewaybill_within_invoice). \
                     _create_ewaybill_before_invoice(ewaybill_date=self.invoice_date)
             moves = pickings.mapped("move_lines")
             grouped_moves_list = self._group_moves(moves)
