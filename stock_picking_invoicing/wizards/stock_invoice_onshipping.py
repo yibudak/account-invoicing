@@ -37,7 +37,7 @@ class StockInvoiceOnshipping(models.TransientModel):
             active_ids = active_ids[0]
 
         if self.env.context.get('active_model') == 'stock.ewaybill':
-            picking = self.env['stock.ewaybill'].browse(active_ids).picking_id
+            picking = self.env['stock.ewaybill'].browse(active_ids).picking_ids
         else:
             pick_obj = self.env['stock.picking']
             picking = pick_obj.browse(active_ids)
@@ -288,7 +288,7 @@ class StockInvoiceOnshipping(models.TransientModel):
         if active_ids:
             active_ids = active_ids[0]
         if self.env.context.get('active_model') == 'stock.ewaybill':
-            picking = self.env['stock.ewaybill'].browse(active_ids).picking_id
+            picking = self.env['stock.ewaybill'].browse(active_ids).picking_ids
         else:
             pick_obj = self.env['stock.picking']
             picking = pick_obj.browse(active_ids)
@@ -676,7 +676,7 @@ class StockInvoiceOnshipping(models.TransientModel):
         for pickings in pick_list:
             if True in pickings.mapped('sale_id.create_ewaybill_within_invoice'):
                 pickings.filtered(lambda p:
-                                  p.ewaybill_ids == False and p.sale_id.create_ewaybill_within_invoice). \
+                                  p.ewaybill_id == False and p.sale_id.create_ewaybill_within_invoice). \
                     _create_ewaybill_before_invoice(ewaybill_date=self.invoice_date)
             moves = pickings.mapped("move_lines")
             grouped_moves_list = self._group_moves(moves)
