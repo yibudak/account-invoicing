@@ -409,6 +409,7 @@ class StockInvoiceOnshipping(models.TransientModel):
             'partner_shipping_id': partner_shipping_id,
             'comment': picking.note,
             'company_id': company.id,
+            'incoterm_id': picking.sale_id.incoterm.id,
             'carrier_id': picking.carrier_id.id,
             'delivery_ref_no': picking.carrier_tracking_ref or False,
             'currency_id': currency.id,
