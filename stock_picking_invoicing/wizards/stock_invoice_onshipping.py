@@ -603,7 +603,8 @@ class StockInvoiceOnshipping(models.TransientModel):
                 invoice_line.write({
                     'purchase_id': picking.purchase_id.id,
                     'purchase_line_id': purchase_line.id,
-                    'move_line_ids': [(6, 0, move.move_line_ids.ids)],
+                    # this field named wrong. it's related to stock.move, not stock.move.line
+                    'move_line_ids': [(4, move.id)],
                 })
                 # Link Purchase Line with Invoice Lines
                 if purchase_line:
@@ -656,7 +657,7 @@ class StockInvoiceOnshipping(models.TransientModel):
             'price_unit': price,
             'purchase_line_ids': [(6, 0, purchase_line.ids)],
             'invoice_line_tax_ids': [(6, 0, taxes.ids)],
-            'move_line_ids': [(6, 0, move.move_line_ids.ids)],
+            'move_line_ids': [(4, move.id)],
             'invoice_id': invoice.id,
         })
         values = self._simulate_invoice_line_onchange(values, price_unit=price)
