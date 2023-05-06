@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Odoo Server 10.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-11-23 13:51+0000\n"
-"PO-Revision-Date: 2023-03-30 14:28+0000\n"
+"PO-Revision-Date: 2023-04-27 14:34+0000\n"
 "Last-Translator: mymage <stefano.consolaro@mymage.it>\n"
 "Language-Team: Italian (https://www.transifex.com/oca/teams/23907/it/)\n"
 "Language: it\n"
@@ -38,7 +38,7 @@ msgstr ""
 #. module: account_invoice_supplierinfo_update
 #: model_terms:ir.ui.view,arch_db:account_invoice_supplierinfo_update.view_wizard_update_invoice_supplierinfo_form
 msgid "Cancel"
-msgstr "Cancella"
+msgstr "Annulla"
 
 #. module: account_invoice_supplierinfo_update
 #: model_terms:ir.ui.view,arch_db:account_invoice_supplierinfo_update.view_account_invoice_form
@@ -107,7 +107,7 @@ msgstr "Fattura"
 #. module: account_invoice_supplierinfo_update
 #: model:ir.model,name:account_invoice_supplierinfo_update.model_account_invoice_line
 msgid "Invoice Line"
-msgstr "Righe Fattura"
+msgstr "Riga fattura"
 
 #. module: account_invoice_supplierinfo_update
 #: model:ir.model.fields,field_description:account_invoice_supplierinfo_update.field_wizard_update_invoice_supplierinfo____last_update
@@ -119,13 +119,13 @@ msgstr "Ultima modifica il"
 #: model:ir.model.fields,field_description:account_invoice_supplierinfo_update.field_wizard_update_invoice_supplierinfo__write_uid
 #: model:ir.model.fields,field_description:account_invoice_supplierinfo_update.field_wizard_update_invoice_supplierinfo_line__write_uid
 msgid "Last Updated by"
-msgstr "Last Updated by"
+msgstr "Ultimo aggiornamento di"
 
 #. module: account_invoice_supplierinfo_update
 #: model:ir.model.fields,field_description:account_invoice_supplierinfo_update.field_wizard_update_invoice_supplierinfo__write_date
 #: model:ir.model.fields,field_description:account_invoice_supplierinfo_update.field_wizard_update_invoice_supplierinfo_line__write_date
 msgid "Last Updated on"
-msgstr "Last Updated on"
+msgstr "Ultimo aggiornamento il"
 
 #. module: account_invoice_supplierinfo_update
 #: model:ir.model.fields,field_description:account_invoice_supplierinfo_update.field_wizard_update_invoice_supplierinfo__line_ids
